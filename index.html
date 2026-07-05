@@ -3,63 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>麻雀 勝ち点計算機</title>
+<title>麻雀 勝点計算機</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap');
 
   :root{
     --felt-1:#0b3d2e;
-    --felt-2:#0f4f3a;
     --ivory:#f2ead9;
     --ivory-dim:#d9cdb0;
     --red:#a8352a;
     --gold:#c8a24a;
     --ink:#1c1c1c;
     --shadow:rgba(0,0,0,0.45);
+    --win-green:#2f6b4f;
   }
 
   *{box-sizing:border-box;}
 
-  html, body{height:100%;}
-
   body{
     margin:0;
-    height:100vh;
+    min-height:100vh;
     background:
       radial-gradient(circle at 50% -10%, #145c41 0%, var(--felt-1) 55%, #072318 100%);
     font-family:'Zen Kaku Gothic New', sans-serif;
     color:var(--ivory);
     display:flex;
     justify-content:center;
-    align-items:stretch;
-    padding:10px;
-    overflow:hidden;
+    padding:12px 10px 30px;
   }
 
   .wrap{
     width:100%;
-    max-width:420px;
-    height:100%;
-    max-height:100%;
+    max-width:430px;
     display:flex;
     flex-direction:column;
     gap:8px;
   }
 
-  header{
-    text-align:center;
-    flex:0 0 auto;
-  }
-
+  header{ text-align:center; }
   header h1{
     font-family:'Shippori Mincho', serif;
-    font-size:19px;
+    font-size:18px;
     font-weight:700;
     margin:0;
     letter-spacing:.06em;
   }
-
   header h1 span{color:var(--red);}
+  header .sub{
+    font-size:10px;
+    color:var(--ivory-dim);
+    letter-spacing:.1em;
+    margin-top:2px;
+  }
 
   .card{
     background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
@@ -67,7 +62,81 @@
     border-radius:12px;
     padding:10px;
     box-shadow:0 6px 16px var(--shadow);
+  }
+
+  .players{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+
+  .player-row{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 8px;
+    border-radius:9px;
+    background:rgba(0,0,0,0.18);
+    border:1px solid transparent;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .player-row.is-leader{ border-color:var(--gold); }
+  .player-row.is-winner{ background:rgba(47,107,79,0.45); }
+
+  .player-name{
+    flex:1 1 auto;
+    min-width:0;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid rgba(200,162,74,0.4);
+    color:var(--ivory);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    font-size:14px;
+    font-weight:700;
+    padding:3px 2px;
+  }
+  .player-name:focus{outline:none; border-bottom-color:var(--gold);}
+
+  .chip-btn{
     flex:0 0 auto;
+    font-size:11px;
+    padding:5px 8px;
+    border-radius:14px;
+    border:1px solid rgba(200,162,74,0.5);
+    background:rgba(0,0,0,0.2);
+    color:var(--ivory-dim);
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .leader-btn.active{
+    background:var(--gold);
+    color:#3a2a05;
+    border-color:var(--gold);
+    font-weight:700;
+  }
+  .winner-btn.active{
+    background:var(--red);
+    color:var(--ivory);
+    border-color:var(--red);
+    font-weight:700;
+  }
+
+  .player-score{
+    flex:0 0 auto;
+    width:56px;
+    text-align:right;
+    font-family:'Shippori Mincho', serif;
+    font-size:19px;
+    font-weight:700;
+    color:var(--gold);
+  }
+  .player-score.neg{color:#e08a7d;}
+
+  .hint{
+    font-size:10.5px;
+    color:var(--ivory-dim);
+    margin-top:4px;
+    line-height:1.5;
   }
 
   .top-row{
@@ -75,27 +144,23 @@
     align-items:center;
     gap:10px;
   }
-
   .input-line{
     display:flex;
     align-items:center;
     gap:6px;
     flex:0 0 auto;
   }
-
   label.field-label{
     font-size:12px;
     color:var(--ivory-dim);
     white-space:nowrap;
   }
-
   .fanzi-input{
     display:flex;
     align-items:stretch;
     gap:6px;
     flex:0 0 auto;
   }
-
   .stepper-btn{
     width:28px;
     flex:0 0 28px;
@@ -105,10 +170,8 @@
     font-size:18px;
     border-radius:8px;
     cursor:pointer;
-    transition:background .15s ease, transform .1s ease;
   }
   .stepper-btn:active{transform:scale(0.94);}
-  .stepper-btn:hover{background:rgba(200,162,74,0.18);}
 
   .fanzi-input input{
     width:46px;
@@ -130,28 +193,11 @@
     margin:0;
   }
 
-  .mini-reset{
-    flex:0 0 auto;
-    background:transparent;
-    border:1px solid rgba(200,162,74,0.4);
-    color:var(--ivory-dim);
-    font-size:15px;
-    line-height:1;
-    width:26px;
-    height:26px;
-    border-radius:7px;
-    cursor:pointer;
-  }
-  .mini-reset:hover{background:rgba(255,255,255,0.05); color:var(--ivory);}
-
   .tiles{
     display:grid;
     grid-template-columns:repeat(2, 1fr);
     gap:7px;
-    flex:1 1 auto;
-    min-height:0;
   }
-
   .tile{
     background:linear-gradient(180deg,#fdf8ee,#efe4cc);
     color:var(--ink);
@@ -160,12 +206,10 @@
     text-align:center;
     cursor:pointer;
     box-shadow:0 3px 0 #b3a37a, 0 6px 10px rgba(0,0,0,0.35);
-    transition:transform .08s ease, box-shadow .08s ease;
-    position:relative;
     display:flex;
     align-items:center;
     justify-content:center;
-    min-height:52px;
+    min-height:50px;
   }
   .tile:active{
     transform:translateY(3px);
@@ -174,21 +218,29 @@
   .tile .name{
     font-family:'Shippori Mincho', serif;
     font-weight:700;
-    font-size:21px;
+    font-size:20px;
   }
   .tile.hi .name{color:var(--red);}
   .tile.wide{grid-column:1 / span 2;}
 
-  .result{
-    text-align:center;
-    flex:0 0 auto;
-    padding:8px 10px;
-  }
+  .result{ text-align:center; }
   .result .row-label{
     font-size:10px;
     letter-spacing:.1em;
     color:var(--ivory-dim);
     text-transform:uppercase;
+  }
+  .result .breakdown{
+    font-size:14px;
+    line-height:1.9;
+    margin-top:4px;
+  }
+  .result .breakdown b{color:var(--gold);}
+  .result .breakdown .lose{color:#e08a7d;}
+  .result .placeholder{
+    font-size:13px;
+    color:var(--ivory-dim);
+    padding:6px 0;
   }
   .result .points{
     font-family:'Shippori Mincho', serif;
@@ -208,7 +260,6 @@
     min-height:16px;
   }
   .result .win-name b{color:var(--red);}
-
   .total-row{
     display:flex;
     flex-wrap:wrap;
@@ -227,25 +278,84 @@
     color:var(--ivory);
   }
 
+  .action-row{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px solid rgba(200,162,74,0.25);
+  }
   .reset-btn{
     background:transparent;
     border:1px solid rgba(200,162,74,0.4);
     color:var(--ivory-dim);
-    padding:3px 10px;
+    padding:5px 14px;
     border-radius:7px;
-    font-size:11px;
+    font-size:12px;
     cursor:pointer;
-    letter-spacing:.03em;
-    margin-left:10px;
   }
   .reset-btn:hover{background:rgba(255,255,255,0.05); color:var(--ivory);}
+
+  .mode-row{
+    display:flex;
+    gap:8px;
+    padding:6px;
+  }
+  .mode-btn{
+    flex:1;
+    padding:8px;
+    border-radius:9px;
+    border:1px solid rgba(200,162,74,0.4);
+    background:rgba(0,0,0,0.2);
+    color:var(--ivory-dim);
+    font-family:'Shippori Mincho', serif;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .mode-btn.active{
+    background:var(--gold);
+    color:#3a2a05;
+    border-color:var(--gold);
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>勝<span>点</span>計算機</h1>
+    <div class="sub" id="modeSub">2人打ちバージョン</div>
   </header>
+
+  <div class="card mode-row">
+    <button class="mode-btn active" data-mode="two">2人</button>
+    <button class="mode-btn" data-mode="three">3人</button>
+  </div>
+
+  <div class="card" id="playersCard">
+    <div class="players" id="players">
+      <div class="player-row" data-idx="0">
+        <input class="player-name" value="プレイヤー1">
+        <button class="chip-btn leader-btn">リーダー</button>
+        <button class="chip-btn winner-btn">勝者</button>
+        <span class="player-score" id="score-0">0</span>
+      </div>
+      <div class="player-row" data-idx="1">
+        <input class="player-name" value="プレイヤー2">
+        <button class="chip-btn leader-btn">リーダー</button>
+        <button class="chip-btn winner-btn">勝者</button>
+        <span class="player-score" id="score-1">0</span>
+      </div>
+      <div class="player-row" data-idx="2">
+        <input class="player-name" value="プレイヤー3">
+        <button class="chip-btn leader-btn">リーダー</button>
+        <button class="chip-btn winner-btn">勝者</button>
+        <span class="player-score" id="score-2">0</span>
+      </div>
+    </div>
+    <div class="hint" id="hint">勝者を選んでから下の役をタップしてください。</div>
+  </div>
 
   <div class="card">
     <div class="top-row">
@@ -260,10 +370,7 @@
       <div class="input-line">
         <label class="field-label" for="renchan">連勝</label>
         <div class="fanzi-input">
-          <button class="stepper-btn" id="renchanMinus">−</button>
-          <input type="number" id="renchan" value="0" min="0">
-          <button class="stepper-btn" id="renchanPlus">＋</button>
-          <button class="mini-reset" id="renchanReset" title="連勝リセット">↺</button>
+          <input type="number" id="renchan" value="0" min="0" readonly>
         </div>
       </div>
     </div>
@@ -279,7 +386,7 @@
     <button class="tile hi wide" data-key="sanma"><span class="name">サンマーギン</span></button>
   </div>
 
-  <div class="card result">
+  <div class="card result" id="twoResult">
     <div class="row-label">今回の点数</div>
     <div class="points" id="points">—</div>
     <div class="win-name" id="winName"></div>
@@ -287,6 +394,18 @@
     <div class="total-row">
       <span class="label">合計</span>
       <span class="value" id="total">0</span>
+      <button class="reset-btn" id="undoTwo">戻る</button>
+      <button class="reset-btn" id="resetTwo">リセット</button>
+    </div>
+  </div>
+
+  <div class="card result" id="threeResult">
+    <div class="row-label">今回の結果</div>
+    <div class="breakdown" id="breakdown">
+      <div class="placeholder">勝者を選んで役をタップしてください</div>
+    </div>
+
+    <div class="action-row">
       <button class="reset-btn" id="undo">戻る</button>
       <button class="reset-btn" id="reset">リセット</button>
     </div>
@@ -298,18 +417,37 @@
   const minusBtn = document.getElementById('minus');
   const plusBtn = document.getElementById('plus');
   const renchanInput = document.getElementById('renchan');
-  const renchanMinusBtn = document.getElementById('renchanMinus');
-  const renchanPlusBtn = document.getElementById('renchanPlus');
-  const renchanResetBtn = document.getElementById('renchanReset');
+  const tiles = document.querySelectorAll('.tile');
+  const modeButtons = document.querySelectorAll('.mode-btn');
+  const modeSub = document.getElementById('modeSub');
+  const hintEl = document.getElementById('hint');
+
+  const playersCard = document.getElementById('playersCard');
+  const twoResult = document.getElementById('twoResult');
+  const threeResult = document.getElementById('threeResult');
+
+  // ---- 2人モード用の要素・状態(元のv6と同じ挙動) ----
   const pointsEl = document.getElementById('points');
   const winNameEl = document.getElementById('winName');
   const totalEl = document.getElementById('total');
-  const resetBtn = document.getElementById('reset');
-  const undoBtn = document.getElementById('undo');
-  const tiles = document.querySelectorAll('.tile');
-
+  const undoTwoBtn = document.getElementById('undoTwo');
+  const resetTwoBtn = document.getElementById('resetTwo');
   let total = 0;
-  let lastState = null;
+  let lastStateTwo = null;
+
+  // ---- 3人モード用の要素・状態 ----
+  const breakdownEl = document.getElementById('breakdown');
+  const undoBtn = document.getElementById('undo');
+  const resetBtn = document.getElementById('reset');
+  const playerRows = document.querySelectorAll('.player-row');
+  const scores = [0, 0, 0];
+  let leaderIdx = 0;
+  let winnerIdx = null;
+  let lastStateThree = null;
+
+  const PLACEHOLDER = `<div class="placeholder">勝者を選んで役をタップしてください</div>`;
+
+  let mode = 'two'; // 'two' か 'three'
 
   const winTypes = {
     hu:     { label: 'フー',         formula: (b) => b },
@@ -328,6 +466,47 @@
     return v;
   }
 
+  function playerName(idx) {
+    return playerRows[idx].querySelector('.player-name').value || `プレイヤー${idx + 1}`;
+  }
+
+  function applyMode() {
+    playersCard.style.display = (mode === 'three') ? '' : 'none';
+    twoResult.style.display = (mode === 'two') ? '' : 'none';
+    threeResult.style.display = (mode === 'three') ? '' : 'none';
+
+    modeSub.textContent = (mode === 'three') ? '3人打ちバージョン' : '2人打ちバージョン';
+    hintEl.textContent = (mode === 'three')
+      ? 'リーダーは席替え後も自由に付け替えられます。勝者を選んでから下の役をタップしてください。'
+      : '';
+
+    // モードを切り替えたら花牌・連勝だけ揃える(各モードの点数はそれぞれ独立して保持)
+    fanziInput.value = 0;
+    renchanInput.value = 0;
+  }
+
+  function renderPlayers() {
+    playerRows.forEach((row, idx) => {
+      row.classList.toggle('is-leader', idx === leaderIdx);
+      row.classList.toggle('is-winner', idx === winnerIdx);
+      row.querySelector('.leader-btn').classList.toggle('active', idx === leaderIdx);
+      row.querySelector('.winner-btn').classList.toggle('active', idx === winnerIdx);
+      const scoreEl = document.getElementById(`score-${idx}`);
+      scoreEl.textContent = (scores[idx] > 0 ? '+' : '') + scores[idx];
+      scoreEl.classList.toggle('neg', scores[idx] < 0);
+    });
+  }
+
+  modeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.mode === mode) return;
+      mode = btn.dataset.mode;
+      modeButtons.forEach(b => b.classList.toggle('active', b === btn));
+      applyMode();
+      tiles.forEach(t => t.style.outline = 'none');
+    });
+  });
+
   minusBtn.addEventListener('click', () => {
     fanziInput.value = Math.max(0, clampValue(fanziInput) - 1);
   });
@@ -335,17 +514,20 @@
     fanziInput.value = clampValue(fanziInput) + 1;
   });
   fanziInput.addEventListener('change', () => clampValue(fanziInput));
-
-  renchanMinusBtn.addEventListener('click', () => {
-    renchanInput.value = Math.max(0, clampValue(renchanInput) - 1);
-  });
-  renchanPlusBtn.addEventListener('click', () => {
-    renchanInput.value = clampValue(renchanInput) + 1;
-  });
   renchanInput.addEventListener('change', () => clampValue(renchanInput));
 
-  renchanResetBtn.addEventListener('click', () => {
-    renchanInput.value = 0;
+  playerRows.forEach((row, idx) => {
+    row.querySelector('.leader-btn').addEventListener('click', () => {
+      if (leaderIdx !== idx) {
+        leaderIdx = idx;
+        renchanInput.value = 0;
+        renderPlayers();
+      }
+    });
+    row.querySelector('.winner-btn').addEventListener('click', () => {
+      winnerIdx = idx;
+      renderPlayers();
+    });
   });
 
   tiles.forEach(tile => {
@@ -354,50 +536,105 @@
       const win = winTypes[key];
       const fanzi = clampValue(fanziInput);
       const renchanCount = clampValue(renchanInput);
-
-      // 直前の状態を保存(戻るボタン用)
-      lastState = {
-        fanzi: fanziInput.value,
-        renchan: renchanInput.value,
-        total: total,
-        pointsHTML: pointsEl.innerHTML,
-        winNameHTML: winNameEl.innerHTML,
-      };
-
       const fanziBase = (fanzi === 0) ? 20 : (fanzi === 1) ? 10 : fanzi;
       const effectiveFanzi = fanziBase + renchanCount;
-      const base = effectiveFanzi + 3;
-      const score = win.formula(base);
 
-      pointsEl.innerHTML = `${score}<span>点</span>`;
-      winNameEl.innerHTML = `<b>${win.label}</b>　花牌${fanziBase}+連勝${renchanCount}`;
+      if (mode === 'two') {
+        // ---- 2人モード:元のv6と同じ、常に合計に加算するだけの計算 ----
+        lastStateTwo = {
+          fanzi: fanziInput.value,
+          renchan: renchanInput.value,
+          total: total,
+          pointsHTML: pointsEl.innerHTML,
+          winNameHTML: winNameEl.innerHTML,
+        };
 
-      total += score;
-      totalEl.textContent = total;
+        const base = effectiveFanzi + 3;
+        const score = win.formula(base);
 
-      // 勝ち方を選んだら連勝を自動で+1
-      renchanInput.value = renchanCount + 1;
+        pointsEl.innerHTML = `${score}<span>点</span>`;
+        winNameEl.innerHTML = `<b>${win.label}</b>　花牌${fanziBase}+連勝${renchanCount}`;
+
+        total += score;
+        totalEl.textContent = total;
+
+        // 勝ち方を選んだら連勝を自動で+1
+        renchanInput.value = renchanCount + 1;
+
+      } else {
+        // ---- 3人モード:リーダー基準の計算 ----
+        if (winnerIdx === null) {
+          breakdownEl.innerHTML = `<div class="placeholder">先に勝者を選んでください</div>`;
+          return;
+        }
+
+        lastStateThree = {
+          scores: [...scores],
+          leaderIdx, winnerIdx,
+          fanzi: fanziInput.value,
+          renchan: renchanInput.value,
+          breakdownHTML: breakdownEl.innerHTML,
+        };
+
+        const baseLeader = effectiveFanzi + 3;
+        const baseCommon = effectiveFanzi + 1;
+        const scoreLeader = win.formula(baseLeader);
+        const scoreCommon = win.formula(baseCommon);
+
+        let lines = [];
+        let renchanContinues;
+
+        if (winnerIdx === leaderIdx) {
+          const others = [0, 1, 2].filter(i => i !== leaderIdx);
+          let gain = 0;
+          others.forEach(i => {
+            scores[i] -= scoreLeader;
+            gain += scoreLeader;
+            lines.push(`<span class="lose">${playerName(i)} -${scoreLeader}</span>`);
+          });
+          scores[leaderIdx] += gain;
+          lines.unshift(`<b>${playerName(leaderIdx)} +${gain}</b>`);
+        } else {
+          const thirdIdx = [0, 1, 2].find(i => i !== leaderIdx && i !== winnerIdx);
+          scores[leaderIdx] -= scoreLeader;
+          scores[thirdIdx] -= scoreCommon;
+          const gain = scoreLeader + scoreCommon;
+          scores[winnerIdx] += gain;
+
+          lines.push(`<b>${playerName(winnerIdx)} +${gain}</b>`);
+          lines.push(`<span class="lose">${playerName(leaderIdx)}(リーダー) -${scoreLeader}</span>`);
+          lines.push(`<span class="lose">${playerName(thirdIdx)} -${scoreCommon}</span>`);
+        }
+
+        // 3人打ちはリーダーが勝った時だけ連勝が続く
+        renchanContinues = (winnerIdx === leaderIdx);
+
+        breakdownEl.innerHTML = `<div>${win.label}(花牌${fanziBase}+連勝${renchanCount})</div>` + lines.join('<br>');
+        renchanInput.value = renchanContinues ? renchanCount + 1 : 0;
+
+        renderPlayers();
+      }
 
       tiles.forEach(t => t.style.outline = 'none');
       tile.style.outline = '2px solid #c8a24a';
     });
   });
 
-  undoBtn.addEventListener('click', () => {
-    if (!lastState) return;
-    fanziInput.value = lastState.fanzi;
-    renchanInput.value = lastState.renchan;
-    total = lastState.total;
+  undoTwoBtn.addEventListener('click', () => {
+    if (!lastStateTwo) return;
+    fanziInput.value = lastStateTwo.fanzi;
+    renchanInput.value = lastStateTwo.renchan;
+    total = lastStateTwo.total;
     totalEl.textContent = total;
-    pointsEl.innerHTML = lastState.pointsHTML;
-    winNameEl.innerHTML = lastState.winNameHTML;
-    lastState = null;
+    pointsEl.innerHTML = lastStateTwo.pointsHTML;
+    winNameEl.innerHTML = lastStateTwo.winNameHTML;
+    lastStateTwo = null;
     tiles.forEach(t => t.style.outline = 'none');
   });
 
-  resetBtn.addEventListener('click', () => {
+  resetTwoBtn.addEventListener('click', () => {
     total = 0;
-    lastState = null;
+    lastStateTwo = null;
     fanziInput.value = 0;
     renchanInput.value = 0;
     totalEl.textContent = total;
@@ -405,6 +642,35 @@
     winNameEl.textContent = '';
     tiles.forEach(t => t.style.outline = 'none');
   });
+
+  undoBtn.addEventListener('click', () => {
+    if (!lastStateThree) return;
+    scores[0] = lastStateThree.scores[0];
+    scores[1] = lastStateThree.scores[1];
+    scores[2] = lastStateThree.scores[2];
+    leaderIdx = lastStateThree.leaderIdx;
+    winnerIdx = lastStateThree.winnerIdx;
+    fanziInput.value = lastStateThree.fanzi;
+    renchanInput.value = lastStateThree.renchan;
+    breakdownEl.innerHTML = lastStateThree.breakdownHTML;
+    lastStateThree = null;
+    renderPlayers();
+    tiles.forEach(t => t.style.outline = 'none');
+  });
+
+  resetBtn.addEventListener('click', () => {
+    scores[0] = scores[1] = scores[2] = 0;
+    winnerIdx = null;
+    lastStateThree = null;
+    fanziInput.value = 0;
+    renchanInput.value = 0;
+    breakdownEl.innerHTML = PLACEHOLDER;
+    renderPlayers();
+    tiles.forEach(t => t.style.outline = 'none');
+  });
+
+  applyMode();
+  renderPlayers();
 </script>
 </body>
 </html>
