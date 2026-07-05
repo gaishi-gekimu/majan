@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>麻雀 勝ち点計算機</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap');
+
+  :root{
+    --felt-1:#0b3d2e;
+    --felt-2:#0f4f3a;
+    --ivory:#f2ead9;
+    --ivory-dim:#d9cdb0;
+    --red:#a8352a;
+    --gold:#c8a24a;
+    --ink:#1c1c1c;
+    --shadow:rgba(0,0,0,0.45);
+  }
+
+  *{box-sizing:border-box;}
+
+  html, body{height:100%;}
+
+  body{
+    margin:0;
+    height:100vh;
+    background:
+      radial-gradient(circle at 50% -10%, #145c41 0%, var(--felt-1) 55%, #072318 100%);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    color:var(--ivory);
+    display:flex;
+    justify-content:center;
+    align-items:stretch;
+    padding:10px;
+    overflow:hidden;
+  }
+
+  .wrap{
+    width:100%;
+    max-width:420px;
+    height:100%;
+    max-height:100%;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  header{
+    text-align:center;
+    flex:0 0 auto;
+  }
+
+  header h1{
+    font-family:'Shippori Mincho', serif;
+    font-size:19px;
+    font-weight:700;
+    margin:0;
+    letter-spacing:.06em;
+  }
+
+  header h1 span{color:var(--red);}
+
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    border:1px solid rgba(200,162,74,0.35);
+    border-radius:12px;
+    padding:10px;
+    box-shadow:0 6px 16px var(--shadow);
+    flex:0 0 auto;
+  }
+
+  .top-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .input-line{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex:0 0 auto;
+  }
+
+  label.field-label{
+    font-size:12px;
+    color:var(--ivory-dim);
+    white-space:nowrap;
+  }
+
+  .fanzi-input{
+    display:flex;
+    align-items:stretch;
+    gap:6px;
+    flex:0 0 auto;
+  }
+
+  .stepper-btn{
+    width:28px;
+    flex:0 0 28px;
+    border:1px solid rgba(200,162,74,0.5);
+    background:rgba(0,0,0,0.25);
+    color:var(--gold);
+    font-size:18px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:background .15s ease, transform .1s ease;
+  }
+  .stepper-btn:active{transform:scale(0.94);}
+  .stepper-btn:hover{background:rgba(200,162,74,0.18);}
+
+  .fanzi-input input{
+    width:46px;
+    flex:0 0 46px;
+    text-align:center;
+    font-size:20px;
+    font-weight:700;
+    font-family:'Shippori Mincho', serif;
+    background:#fdf8ee;
+    color:var(--ink);
+    border:1px solid rgba(200,162,74,0.5);
+    border-radius:8px;
+    padding:4px 2px;
+    -moz-appearance:textfield;
+  }
+  .fanzi-input input::-webkit-outer-spin-button,
+  .fanzi-input input::-webkit-inner-spin-button{
+    -webkit-appearance:none;
+    margin:0;
+  }
+
+  .mini-reset{
+    flex:0 0 auto;
+    background:transparent;
+    border:1px solid rgba(200,162,74,0.4);
+    color:var(--ivory-dim);
+    font-size:15px;
+    line-height:1;
+    width:26px;
+    height:26px;
+    border-radius:7px;
+    cursor:pointer;
+  }
+  .mini-reset:hover{background:rgba(255,255,255,0.05); color:var(--ivory);}
+
+  .tiles{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:7px;
+    flex:1 1 auto;
+    min-height:0;
+  }
+
+  .tile{
+    background:linear-gradient(180deg,#fdf8ee,#efe4cc);
+    color:var(--ink);
+    border:none;
+    border-radius:8px;
+    text-align:center;
+    cursor:pointer;
+    box-shadow:0 3px 0 #b3a37a, 0 6px 10px rgba(0,0,0,0.35);
+    transition:transform .08s ease, box-shadow .08s ease;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:52px;
+  }
+  .tile:active{
+    transform:translateY(3px);
+    box-shadow:0 0 0 #b3a37a, 0 2px 4px rgba(0,0,0,0.35);
+  }
+  .tile .name{
+    font-family:'Shippori Mincho', serif;
+    font-weight:700;
+    font-size:21px;
+  }
+  .tile.hi .name{color:var(--red);}
+  .tile.wide{grid-column:1 / span 2;}
+
+  .result{
+    text-align:center;
+    flex:0 0 auto;
+    padding:8px 10px;
+  }
+  .result .row-label{
+    font-size:10px;
+    letter-spacing:.1em;
+    color:var(--ivory-dim);
+    text-transform:uppercase;
+  }
+  .result .points{
+    font-family:'Shippori Mincho', serif;
+    font-size:34px;
+    font-weight:700;
+    color:var(--gold);
+    line-height:1.15;
+  }
+  .result .points span{
+    font-size:16px;
+    margin-left:5px;
+    color:var(--ivory-dim);
+  }
+  .result .win-name{
+    font-size:12px;
+    color:var(--ivory);
+    min-height:16px;
+  }
+  .result .win-name b{color:var(--red);}
+
+  .total-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:baseline;
+    justify-content:center;
+    gap:6px 8px;
+    margin-top:6px;
+    padding-top:6px;
+    border-top:1px solid rgba(200,162,74,0.25);
+  }
+  .total-row .label{font-size:12px;color:var(--ivory-dim);}
+  .total-row .value{
+    font-family:'Shippori Mincho', serif;
+    font-size:30px;
+    font-weight:700;
+    color:var(--ivory);
+  }
+
+  .reset-btn{
+    background:transparent;
+    border:1px solid rgba(200,162,74,0.4);
+    color:var(--ivory-dim);
+    padding:3px 10px;
+    border-radius:7px;
+    font-size:11px;
+    cursor:pointer;
+    letter-spacing:.03em;
+    margin-left:10px;
+  }
+  .reset-btn:hover{background:rgba(255,255,255,0.05); color:var(--ivory);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>勝<span>点</span>計算機</h1>
+  </header>
+
+  <div class="card">
+    <div class="top-row">
+      <div class="input-line">
+        <label class="field-label" for="fanzi">花牌</label>
+        <div class="fanzi-input">
+          <button class="stepper-btn" id="minus">−</button>
+          <input type="number" id="fanzi" value="0" min="0">
+          <button class="stepper-btn" id="plus">＋</button>
+        </div>
+      </div>
+      <div class="input-line">
+        <label class="field-label" for="renchan">連勝</label>
+        <div class="fanzi-input">
+          <button class="stepper-btn" id="renchanMinus">−</button>
+          <input type="number" id="renchan" value="0" min="0">
+          <button class="stepper-btn" id="renchanPlus">＋</button>
+          <button class="mini-reset" id="renchanReset" title="連勝リセット">↺</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tiles" id="tiles">
+    <button class="tile" data-key="hu"><span class="name">フー</span></button>
+    <button class="tile" data-key="zumo"><span class="name">ズーモー</span></button>
+    <button class="tile hi" data-key="egin"><span class="name">エギン</span></button>
+    <button class="tile" data-key="chogin"><span class="name">チョギン</span></button>
+    <button class="tile" data-key="ginchō"><span class="name">ギンチョ</span></button>
+    <button class="tile" data-key="ginho"><span class="name">ギンホ</span></button>
+    <button class="tile hi wide" data-key="sanma"><span class="name">サンマーギン</span></button>
+  </div>
+
+  <div class="card result">
+    <div class="row-label">今回の点数</div>
+    <div class="points" id="points">—</div>
+    <div class="win-name" id="winName"></div>
+
+    <div class="total-row">
+      <span class="label">合計</span>
+      <span class="value" id="total">0</span>
+      <button class="reset-btn" id="undo">戻る</button>
+      <button class="reset-btn" id="reset">リセット</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const fanziInput = document.getElementById('fanzi');
+  const minusBtn = document.getElementById('minus');
+  const plusBtn = document.getElementById('plus');
+  const renchanInput = document.getElementById('renchan');
+  const renchanMinusBtn = document.getElementById('renchanMinus');
+  const renchanPlusBtn = document.getElementById('renchanPlus');
+  const renchanResetBtn = document.getElementById('renchanReset');
+  const pointsEl = document.getElementById('points');
+  const winNameEl = document.getElementById('winName');
+  const totalEl = document.getElementById('total');
+  const resetBtn = document.getElementById('reset');
+  const undoBtn = document.getElementById('undo');
+  const tiles = document.querySelectorAll('.tile');
+
+  let total = 0;
+  let lastState = null;
+
+  const winTypes = {
+    hu:     { label: 'フー',         formula: (b) => b },
+    zumo:   { label: 'ズーモー',     formula: (b) => b * 2 },
+    egin:   { label: 'エギン',       formula: (b) => b * 2 + 10 },
+    chogin: { label: 'チョギン',     formula: (b) => b * 3 },
+    ginchō: { label: 'ギンチョ',     formula: (b) => b * 6 },
+    ginho:  { label: 'ギンホ',       formula: (b) => b * 8 },
+    sanma:  { label: 'サンマーギン', formula: (b) => b * 3 + 10 },
+  };
+
+  function clampValue(input) {
+    let v = parseInt(input.value, 10);
+    if (isNaN(v) || v < 0) v = 0;
+    input.value = v;
+    return v;
+  }
+
+  minusBtn.addEventListener('click', () => {
+    fanziInput.value = Math.max(0, clampValue(fanziInput) - 1);
+  });
+  plusBtn.addEventListener('click', () => {
+    fanziInput.value = clampValue(fanziInput) + 1;
+  });
+  fanziInput.addEventListener('change', () => clampValue(fanziInput));
+
+  renchanMinusBtn.addEventListener('click', () => {
+    renchanInput.value = Math.max(0, clampValue(renchanInput) - 1);
+  });
+  renchanPlusBtn.addEventListener('click', () => {
+    renchanInput.value = clampValue(renchanInput) + 1;
+  });
+  renchanInput.addEventListener('change', () => clampValue(renchanInput));
+
+  renchanResetBtn.addEventListener('click', () => {
+    renchanInput.value = 0;
+  });
+
+  tiles.forEach(tile => {
+    tile.addEventListener('click', () => {
+      const key = tile.dataset.key;
+      const win = winTypes[key];
+      const fanzi = clampValue(fanziInput);
+      const renchanCount = clampValue(renchanInput);
+
+      // 直前の状態を保存(戻るボタン用)
+      lastState = {
+        fanzi: fanziInput.value,
+        renchan: renchanInput.value,
+        total: total,
+        pointsHTML: pointsEl.innerHTML,
+        winNameHTML: winNameEl.innerHTML,
+      };
+
+      const fanziBase = (fanzi === 0) ? 20 : (fanzi === 1) ? 10 : fanzi;
+      const effectiveFanzi = fanziBase + renchanCount;
+      const base = effectiveFanzi + 3;
+      const score = win.formula(base);
+
+      pointsEl.innerHTML = `${score}<span>点</span>`;
+      winNameEl.innerHTML = `<b>${win.label}</b>　花牌${fanziBase}+連勝${renchanCount}`;
+
+      total += score;
+      totalEl.textContent = total;
+
+      // 勝ち方を選んだら連勝を自動で+1
+      renchanInput.value = renchanCount + 1;
+
+      tiles.forEach(t => t.style.outline = 'none');
+      tile.style.outline = '2px solid #c8a24a';
+    });
+  });
+
+  undoBtn.addEventListener('click', () => {
+    if (!lastState) return;
+    fanziInput.value = lastState.fanzi;
+    renchanInput.value = lastState.renchan;
+    total = lastState.total;
+    totalEl.textContent = total;
+    pointsEl.innerHTML = lastState.pointsHTML;
+    winNameEl.innerHTML = lastState.winNameHTML;
+    lastState = null;
+    tiles.forEach(t => t.style.outline = 'none');
+  });
+
+  resetBtn.addEventListener('click', () => {
+    total = 0;
+    lastState = null;
+    fanziInput.value = 0;
+    renchanInput.value = 0;
+    totalEl.textContent = total;
+    pointsEl.textContent = '—';
+    winNameEl.textContent = '';
+    tiles.forEach(t => t.style.outline = 'none');
+  });
+</script>
+</body>
+</html>
